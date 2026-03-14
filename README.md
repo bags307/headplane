@@ -31,6 +31,21 @@ These are some of the features that Headplane offers:
 - The ability to edit DNS settings and automatically provision Headscale
 - Configurability for Headscale's settings
 
+## LexIQ Fork
+
+This is the LexIQ fork of Headplane. The backend server is unmodified from upstream.
+The frontend UI has been replaced with a LexIQ-branded interface under `app/lexiq/`.
+
+See [docs/dev/ui/README.md](./docs/dev/ui/README.md) for the UI development guide.
+
+```bash
+# Develop the UI without a backend (mock data, full HMR)
+pnpm dev:ui
+
+# Run against a real headscale instance
+pnpm dev
+```
+
 ## Deployment
 Refer to the [website](https://headplane.net) for detailed installation instructions.
 
