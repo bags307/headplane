@@ -1,0 +1,123 @@
+import { data } from "react-router";
+
+import { getOidcSubject } from "~/server/web/headscale-identity";
+import { Capabilities } from "~/server/web/roles";
+
+import type { Route } from "./+types/overview";
+
+export async function authKeysAction({ request, context }: Route.ActionArgs) {
+  const principal = await context.auth.require(request);
+  const apiKey = context.auth.getHeadscaleApiKey(principal, context.oidc?.apiKey);
+  const api = context.hsApi.getRuntimeClient(apiKey);
+
+  const canGenerateAny = context.auth.can(principal, Capabilities.generate_authkeys);
+  const canGenerateOwn = context.auth.can(principal, Capabilities.generate_own_authkeys);
+
+  if (!canGenerateAny && !canGenerateOwn) {
+    throw data("You do not have permission to manage pre-auth keys", {
+      status: 403,
+    });
+  }
+
+  async function checkSelfServiceOwnership(userId: string) {
+    if (canGenerateAny || !canGenerateOwn) return;
+    const [targetUser] = await api.getUsers(userId);
+    if (!targetUser) {
+      throw data("User not found.", { status: 404 });
+    }
+    const targetSubject = getOidcSubject(targetUser);
+    if (principal.kind !== "oidc" || targetSubject !== principal.user.subject) {
+      throw data("You do not have permission to manage this user's pre-auth keys", {
+        status: 403,
+      });
+    }
+  }
+
+  const formData = await request.formData();
+  const action = formData.get("action_id")?.toString();
+  if (!action) {
+    throw data("Missing `action_id` in the form data.", {
+      status: 400,
+    });
+  }
+
+  switch (action) {
+    case "add_preauthkey": {
+      const user = formData.get("user_id")?.toString() || null;
+      const aclTagsRaw = formData.get("acl_tags")?.toString() || "";
+      const aclTags = aclTagsRaw
+        .split(",")
+        .map((t) => t.trim())
+        .filter((t) => t.length > 0);
+
+      if (!user && aclTags.length === 0) {
+        return data("Must specify either a user or ACL tags.", {
+          status: 400,
+        });
+      }
+
+      if (user) {
+        await checkSelfServiceOwnership(user);
+      }
+
+      const expiry = formData.get("expiry")?.toString();
+      if (!expiry) {
+        return data("Missing `expiry` in the form data.", {
+          status: 400,
+        });
+      }
+
+      const reusable = formData.get("reusable")?.toString();
+      if (!reusable) {
+        return data("Missing `reusable` in the form data.", {
+          status: 400,
+        });
+      }
+
+      const ephemeral = formData.get("ephemeral")?.toString();
+      if (!ephemeral) {
+        return data("Missing `ephemeral` in the form data.", {
+          status: 400,
+        });
+      }
+
+      const day = Number(expiry.toString().split(" ")[0]);
+      const date = new Date();
+      date.setDate(date.getDate() + day);
+
+      const key = await api.createPreAuthKey(
+        user,
+        ephemeral === "on",
+        reusable === "on",
+        date,
+        aclTags.length > 0 ? aclTags : null,
+      );
+
+      return data({ success: true as const, key: key.key });
+    }
+    case "expire_preauthkey": {
+      const key = formData.get("key")?.toString();
+      if (!key) {
+        return data("Missing `key` in the form data.", {
+          status: 400,
+        });
+      }
+
+      const user = formData.get("user_id")?.toString();
+      if (!user) {
+        return data("Missing `user_id` in the form data.", {
+          status: 400,
+        });
+      }
+
+      await checkSelfServiceOwnership(user);
+
+      await api.expirePreAuthKey(user, key);
+      return data("Pre-auth key expired");
+    }
+    default:
+      return data("Invalid action", {
+        status: 400,
+      });
+  }
+}
