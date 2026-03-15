@@ -68,7 +68,7 @@ headscale:
   # This is optional, but HIGHLY recommended for the best experience
   # If this is read only, Headplane will show your configuration settings
   # in the Web UI, but they cannot be changed.
-  config_path: "/etc/headscale/config.yaml"
+  # config_path: "/etc/headscale/config.yaml"
 
   # Whether the Headscale configuration should be strictly validated
   # when reading from `config_path`. If true, Headplane will not interact
