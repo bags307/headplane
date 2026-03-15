@@ -11,6 +11,30 @@ import Footer from "./footer";
 import Header from "./header";
 
 export async function loader({ request, context, ...rest }: Route.LoaderArgs) {
+  if (process.env.MOCK_MODE) {
+    return {
+      access: {
+        dns: true,
+        machines: true,
+        policy: true,
+        settings: true,
+        ui: true,
+        users: true,
+      },
+      baseUrl: "http://localhost:8080",
+      configAvailable: false,
+      isDebug: false,
+      isHealthy: true,
+      user: {
+        email: "dev@lexiq.local",
+        name: "Dev User",
+        picture: undefined,
+        subject: "mock-dev-user",
+        username: "dev@lexiq.local",
+      },
+    };
+  }
+
   try {
     const principal = await context.auth.require(request);
 
