@@ -1,13 +1,14 @@
 import { Outlet, redirect } from "react-router";
 
 import { ErrorBanner } from "~/components/error-banner";
+import Sidebar from "~/lexiq/components/sidebar";
 import { pruneEphemeralNodes } from "~/server/db/pruner";
 import { isDataUnauthorizedError } from "~/server/headscale/api/error-client";
 import { Capabilities } from "~/server/web/roles";
 import log from "~/utils/log";
 
+import "~/lexiq/lexiq.css";
 import type { Route } from "./+types/app";
-import Footer from "./footer";
 import Header from "./header";
 
 export async function loader({ request, context, ...rest }: Route.LoaderArgs) {
@@ -107,17 +108,19 @@ export async function loader({ request, context, ...rest }: Route.LoaderArgs) {
 
 export default function AppLayout({ loaderData }: Route.ComponentProps) {
   return (
-    <>
-      <Header
-        access={loaderData.access}
-        configAvailable={loaderData.configAvailable}
-        user={loaderData.user}
-      />
-      <main className="container mt-4 mb-24 overscroll-contain">
-        <Outlet />
-      </main>
-      <Footer isDebug={loaderData.isDebug} baseUrl={loaderData.baseUrl} />
-    </>
+    <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">
+      <Sidebar access={loaderData.access} configAvailable={loaderData.configAvailable} />
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <Header
+          access={loaderData.access}
+          configAvailable={loaderData.configAvailable}
+          user={loaderData.user}
+        />
+        <main className="flex-1 overflow-y-auto p-6">
+          <Outlet />
+        </main>
+      </div>
+    </div>
   );
 }
 
