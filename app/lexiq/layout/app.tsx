@@ -22,7 +22,7 @@ export async function loader({ request, context, ...rest }: Route.LoaderArgs) {
         users: true,
       },
       baseUrl: "http://localhost:8080",
-      configAvailable: false,
+      configAvailable: true,
       isDebug: false,
       isHealthy: true,
       user: {

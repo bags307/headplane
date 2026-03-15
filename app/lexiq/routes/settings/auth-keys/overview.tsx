@@ -18,6 +18,10 @@ import AuthKeyRow from "./auth-key-row";
 import AddAuthKey from "./dialogs/add-auth-key";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
+  if (process.env.MOCK_MODE) {
+    const { mockAuthKeysLoader } = await import("~/lexiq/mocks/settings");
+    return mockAuthKeysLoader();
+  }
   const principal = await context.auth.require(request);
   const apiKey = context.auth.getHeadscaleApiKey(principal, context.oidc?.apiKey);
   const api = context.hsApi.getRuntimeClient(apiKey);

@@ -5,6 +5,10 @@ import Link from "~/components/link";
 import type { Route } from "./+types/overview";
 
 export async function loader({ context }: Route.LoaderArgs) {
+  if (process.env.MOCK_MODE) {
+    const { mockLoader } = await import("~/lexiq/mocks/settings");
+    return mockLoader();
+  }
   const oidcConnector = await context.oidc?.connector.get();
   return {
     config: context.hs.writable(),

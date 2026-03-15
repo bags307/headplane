@@ -12,6 +12,10 @@ import AddUser from "./dialogs/add-user";
 import RestrictionTable from "./table";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
+  if (process.env.MOCK_MODE) {
+    const { mockRestrictionsLoader } = await import("~/lexiq/mocks/settings");
+    return mockRestrictionsLoader();
+  }
   const principal = await context.auth.require(request);
   const check = context.auth.can(principal, Capabilities.read_users);
   if (!check) {
