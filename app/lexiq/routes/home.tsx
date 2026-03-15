@@ -17,7 +17,7 @@ import type { Route } from "./+types/home";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   if (process.env.MOCK_MODE) {
-    return {}
+    return redirect("/machines");
   }
   const principal = await context.auth.require(request);
 
