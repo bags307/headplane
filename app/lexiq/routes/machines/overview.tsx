@@ -5,6 +5,9 @@ import Code from "~/components/Code";
 import Input from "~/components/Input";
 import Link from "~/components/link";
 import Tooltip from "~/components/Tooltip";
+import { Badge } from "~/lexiq/components/badge";
+import { Button } from "~/lexiq/components/button";
+import { Card } from "~/lexiq/components/card";
 import { Capabilities } from "~/server/web/roles";
 import cn from "~/utils/cn";
 import { mapNodes, sortNodeTags } from "~/utils/node-info";
@@ -16,8 +19,8 @@ import { machineAction } from "./machine-actions";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   if (process.env.MOCK_MODE) {
-    const { mockLoader } = await import('~/lexiq/mocks/machines')
-    return mockLoader()
+    const { mockLoader } = await import("~/lexiq/mocks/machines");
+    return mockLoader();
   }
   const principal = await context.auth.require(request);
 
@@ -156,7 +159,16 @@ export default function Page({ loaderData }: Route.ComponentProps) {
   };
 
   return (
-    <>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Machines</h2>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            {filteredAndSortedNodes.length} of {loaderData.populatedNodes.length} device
+            {loaderData.populatedNodes.length !== 1 ? "s" : ""}
+          </p>
+        </div>
+      </div>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col">
           <h1 className="mb-2 text-2xl font-medium">Machines</h1>
@@ -382,6 +394,6 @@ export default function Page({ loaderData }: Route.ComponentProps) {
           </tbody>
         </table>
       </div>
-    </>
+    </div>
   );
 }
