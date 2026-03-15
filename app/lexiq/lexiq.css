@@ -1,7 +1,5 @@
 /* LexIQ Design Tokens — Inferx-dash inspired, Tailwind v4 @theme */
 
-@custom-variant dark (&:where(.dark, .dark *));
-
 @theme {
   /* Brand / Primary */
   --color-brand: #3b82f6;
