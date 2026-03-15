@@ -33,7 +33,7 @@ server:
   #
   # Data formats prior to 0.6.1 will automatically be migrated.
   # PLEASE ensure this directory is mounted if running in Docker.
-  data_path: "/var/lib/headplane"
+  data_path: "./headplane-data"
 
   # The info secret is optional and allows access to certain debug endpoints
   # that may expose sensitive information about your Headplane instance.
