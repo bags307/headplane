@@ -77,3 +77,24 @@ git merge upstream/main
 
 Conflicts will only ever appear in `app/routes.ts` (new route additions). Resolve by
 adding matching entries pointing to `app/lexiq/routes/`.
+
+## Component Library (`app/lexiq/components/`)
+
+LexIQ provides these primitive components (Tremor-inspired, Tailwind v4 native):
+
+- `Card` — surface container with `Card.Header`, `Card.Body`, `Card.Title` sub-components
+- `Badge` — semantic status badge (`green`/`yellow`/`red`/`gray`/`blue`)
+- `Button` — `primary`/`secondary`/`ghost`/`danger` variants, `sm`/`md` sizes
+- `Sidebar` — app sidebar (used by layout only)
+
+Import: `import { Card } from "~/lexiq/components/card"` etc.
+
+## Design Tokens (`app/lexiq/lexiq.css`)
+
+CSS custom properties available via Tailwind v4:
+
+- `--color-brand` (#3b82f6) — primary blue
+- `--color-surface` — card/page backgrounds
+- `--color-border` — 1px borders
+- `--color-content-strong` — headings/primary text
+- `--sidebar-width` (16rem) / `--header-height` (4rem) — layout dimensions
