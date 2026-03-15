@@ -21,6 +21,21 @@ import Routes from "./dialogs/routes";
 import { machineAction } from "./machine-actions";
 
 export async function loader({ request, params, context }: Route.LoaderArgs) {
+  if (process.env.MOCK_MODE) {
+    const { mockLoader } = await import("~/lexiq/mocks/machines");
+    const { populatedNodes, users, magic, agent } = mockLoader();
+    const node = populatedNodes.find((n) => n.id === params.id) ?? populatedNodes[0];
+    return {
+      agent,
+      existingTags: [],
+      magic,
+      node,
+      stats: undefined,
+      supportsNodeOwnerChange: false,
+      tags: node.tags,
+      users,
+    };
+  }
   const principal = await context.auth.require(request);
   if (!params.id) {
     throw new Error("No machine ID provided");

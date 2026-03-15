@@ -22,7 +22,7 @@ export default [
 
     ...prefix("/machines", [
       index("lexiq/routes/machines/overview.tsx"),
-      route("/:id", "routes/machines/machine.tsx"),
+      route("/:id", "lexiq/routes/machines/machine.tsx"),
     ]),
 
     route("/users", "lexiq/routes/users/overview.tsx"),
