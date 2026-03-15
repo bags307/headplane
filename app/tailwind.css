@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
-/* Enable class-based dark mode (.dark on <html>) in addition to media query */
-@custom-variant dark (&:where(.dark, .dark *));
+/* Enable class-based dark mode — equivalent to Tailwind v3 darkMode: 'class' */
+@custom-variant dark (.dark &);
 
 @plugin "tailwindcss-animate";
 @plugin "tailwindcss-react-aria-components";
