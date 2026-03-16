@@ -5,6 +5,7 @@ import Code from "~/components/Code";
 import Notice from "~/components/Notice";
 import type { LoadContext } from "~/server";
 import { Capabilities } from "~/server/web/roles";
+import cn from "~/utils/cn";
 
 import ManageDomains from "./components/manage-domains";
 import ManageNS from "./components/manage-ns";
@@ -16,8 +17,8 @@ import { dnsAction } from "./dns-actions";
 // We do not want to expose every config value
 export async function loader({ request, context }: LoaderFunctionArgs<LoadContext>) {
   if (process.env.MOCK_MODE) {
-    const { mockLoader } = await import('~/lexiq/mocks/dns')
-    return mockLoader()
+    const { mockLoader } = await import("~/lexiq/mocks/dns");
+    return mockLoader();
   }
   if (!context.hs.readable()) {
     throw new Error("No configuration is available");
@@ -26,7 +27,6 @@ export async function loader({ request, context }: LoaderFunctionArgs<LoadContex
   const principal = await context.auth.require(request);
   const check = context.auth.can(principal, Capabilities.read_network);
   if (!check) {
-    // Not authorized to view this page
     throw new Error(
       "You do not have permission to view this page. Please contact your administrator.",
     );
@@ -57,6 +57,11 @@ export async function action(data: ActionFunctionArgs) {
   return dnsAction(data);
 }
 
+const card = cn(
+  "rounded-lg border border-gray-200 bg-white p-5",
+  "dark:border-gray-700 dark:bg-gray-900",
+);
+
 export default function Page() {
   const data = useLoaderData<typeof loader>();
 
@@ -64,43 +69,52 @@ export default function Page() {
   for (const key of Object.keys(data.splitDns)) {
     allNs[key] = data.splitDns[key];
   }
-
   allNs.global = data.nameservers;
+
   const isDisabled = data.access === false || data.writable === false;
 
   return (
-    <div className="flex max-w-(--breakpoint-lg) flex-col gap-16">
-      {data.writable ? undefined : (
+    <div className="flex max-w-2xl flex-col gap-4">
+      <h1 className="mb-1.5 text-2xl font-medium">DNS</h1>
+
+      {!data.writable && (
         <Notice>
           The Headscale configuration is read-only. You cannot make changes to the configuration
         </Notice>
       )}
-      {data.access ? undefined : (
+      {!data.access && (
         <Notice>
           Your permissions do not allow you to modify the DNS settings for this tailnet.
         </Notice>
       )}
-      <RenameTailnet isDisabled={isDisabled} name={data.baseDomain} />
-      <ManageNS isDisabled={isDisabled} nameservers={allNs} overrideLocalDns={data.overrideDns} />
-      <ManageRecords isDisabled={isDisabled} records={data.extraRecords} />
-      <ManageDomains
-        isDisabled={isDisabled}
-        magic={data.magicDns ? data.baseDomain : undefined}
-        searchDomains={data.searchDomains}
-      />
 
-      <div className="flex w-full flex-col sm:w-2/3">
-        <h1 className="mb-4 text-2xl font-medium">Magic DNS</h1>
-        <p className="mb-4">
+      <div className={card}>
+        <RenameTailnet isDisabled={isDisabled} name={data.baseDomain} />
+      </div>
+
+      <div className={card}>
+        <h2 className="mb-2 text-base font-semibold">Magic DNS</h2>
+        <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
           Automatically register domain names for each device on the tailnet. Devices will be
-          accessible at{" "}
-          <Code>
-            [device].
-            {data.baseDomain}
-          </Code>{" "}
-          when Magic DNS is enabled.
+          accessible at <Code>[device].{data.baseDomain}</Code> when Magic DNS is enabled.
         </p>
         <ToggleMagic isDisabled={isDisabled} isEnabled={data.magicDns} />
+      </div>
+
+      <div className={card}>
+        <ManageNS isDisabled={isDisabled} nameservers={allNs} overrideLocalDns={data.overrideDns} />
+      </div>
+
+      <div className={card}>
+        <ManageRecords isDisabled={isDisabled} records={data.extraRecords} />
+      </div>
+
+      <div className={card}>
+        <ManageDomains
+          isDisabled={isDisabled}
+          magic={data.magicDns ? data.baseDomain : undefined}
+          searchDomains={data.searchDomains}
+        />
       </div>
     </div>
   );

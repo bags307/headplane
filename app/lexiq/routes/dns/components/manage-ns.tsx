@@ -18,8 +18,8 @@ interface Props {
 
 export default function ManageNS({ nameservers, isDisabled, overrideLocalDns }: Props) {
   return (
-    <div className="flex w-full flex-col sm:w-2/3">
-      <h1 className="mb-4 text-2xl font-medium">Nameservers</h1>
+    <div className="flex flex-col">
+      <h2 className="mb-3 text-base font-semibold">Nameservers</h2>
       <p>
         Set the nameservers used by devices on the Tailnet to resolve DNS queries.{" "}
         <Link external styled to="https://tailscale.com/kb/1054/dns">
