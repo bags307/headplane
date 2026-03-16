@@ -1,4 +1,5 @@
 # Headplane
+
 > A feature-complete web UI for [Headscale](https://headscale.net)
 
 <picture>
@@ -36,25 +37,55 @@ These are some of the features that Headplane offers:
 This is the LexIQ fork of Headplane. The backend server is unmodified from upstream.
 The frontend UI has been replaced with a LexIQ-branded interface under `app/lexiq/`.
 
-See [docs/dev/ui/README.md](./docs/dev/ui/README.md) for the UI development guide.
+See [docs/dev/ui/README.md](./docs/dev/ui/README.md) for the full UI development guide.
+
+### Quick Start
 
 ```bash
-# Develop the UI without a backend (mock data, full HMR)
+# Install dependencies (requires Node 22, pnpm 10)
+nvm use 22 && pnpm install
+
+# Develop the UI without a backend (mock data, full HMR, port 3001)
 pnpm dev:ui
 
-# Run against a real headscale instance
+# Run against a real headscale instance (port 3000)
 pnpm dev
 ```
 
+### UI Architecture
+
+```
+app/
+├── server/          ← UPSTREAM ONLY — never modify
+├── routes/          ← UPSTREAM ONLY — never modify
+├── lexiq/
+│   ├── routes/      ← LexIQ UI pages (copied from upstream + MOCK_MODE guards)
+│   ├── components/  ← Primitive components: Card, Badge, Button, Sidebar, ThemeProvider
+│   ├── layout/      ← App shell: sidebar (256px) + header (64px)
+│   ├── mocks/       ← Mock fixture data for dev:ui mode
+│   └── lexiq.css    ← Design tokens (@theme CSS variables)
+└── routes.ts        ← Routing manifest — UI routes → lexiq/, server routes unchanged
+```
+
+### Branches
+
+| Branch           | Purpose                                                              |
+| ---------------- | -------------------------------------------------------------------- |
+| `feature/ui`     | Scaffold — mock data, route wiring, dev:ui setup                     |
+| `feature/new-ui` | Active — LexIQ design system (sidebar layout, dark mode, components) |
+
 ## Deployment
+
 Refer to the [website](https://headplane.net) for detailed installation instructions.
 
 ## Versioning
+
 Headplane uses [semantic versioning](https://semver.org/) for its releases (since v0.6.0).
 Pre-release builds are available under the `next` tag and get updated when a new release
 PR is opened and actively in testing.
 
 ## Contributing
+
 Headplane is an open-source project and contributions are welcome! If you have
 any suggestions, bug reports, or feature requests, please open an issue. Also
 refer to the [contributor guidelines](./docs/CONTRIBUTING.md) for more info.
