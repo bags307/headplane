@@ -85,12 +85,18 @@ export async function loader({ request, context }: Route.LoaderArgs) {
     try {
       const hsApi = context.hsApi.getRuntimeClient(context.oidc!.apiKey);
       const hsUsers = await hsApi.getUsers();
-      const hsUser = findHeadscaleUserBySubject(hsUsers, claims.sub, userInfo.email);
-      if (hsUser) {
-        await context.auth.linkHeadscaleUser(userId, hsUser.id);
+      let hsUser = findHeadscaleUserBySubject(hsUsers, claims.sub, userInfo.email);
+      if (!hsUser) {
+        log.info(
+          "auth",
+          "Headscale user not found for %s, auto-creating",
+          userInfo.email ?? username,
+        );
+        hsUser = await hsApi.createUser(username, userInfo.email, name, picture);
       }
+      await context.auth.linkHeadscaleUser(userId, hsUser.id);
     } catch (error) {
-      log.warn("auth", "Failed to link Headscale user: %s", String(error));
+      log.warn("auth", "Failed to link or create Headscale user: %s", String(error));
     }
 
     return redirect("/", {
