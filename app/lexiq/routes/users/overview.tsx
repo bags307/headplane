@@ -3,7 +3,6 @@ import { createHash } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { useEffect, useState } from "react";
 
-import { Badge } from "~/lexiq/components/badge";
 import { users as usersTable } from "~/server/db/schema";
 import { getOidcSubject } from "~/server/web/headscale-identity";
 import { Capabilities } from "~/server/web/roles";
