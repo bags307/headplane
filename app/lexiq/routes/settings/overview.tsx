@@ -1,6 +1,7 @@
-import { ArrowRight } from "lucide-react";
+import { FileKey2, Shield } from "lucide-react";
+import { Link } from "react-router";
 
-import Link from "~/components/link";
+import cn from "~/utils/cn";
 
 import type { Route } from "./+types/overview";
 
@@ -16,55 +17,76 @@ export async function loader({ context }: Route.LoaderArgs) {
   };
 }
 
+interface SettingsCardProps {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  to: string;
+  linkLabel: string;
+}
+
+function SettingsCard({ icon, title, description, to, linkLabel }: SettingsCardProps) {
+  return (
+    <div
+      className={cn(
+        "flex flex-col rounded-lg border border-gray-200 bg-white p-5",
+        "dark:border-gray-700 dark:bg-gray-900",
+      )}
+    >
+      <div className="mb-3 flex items-center gap-3">
+        <div
+          className={cn(
+            "flex h-9 w-9 items-center justify-center rounded-md",
+            "bg-gray-100 dark:bg-gray-800",
+          )}
+        >
+          {icon}
+        </div>
+        <h2 className="text-base font-semibold text-gray-900 dark:text-white">{title}</h2>
+      </div>
+      <p className="mb-4 flex-1 text-sm text-gray-500 dark:text-gray-400">{description}</p>
+      <Link
+        to={to}
+        className={cn(
+          "inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium",
+          "bg-blue-50 text-blue-600 hover:bg-blue-100",
+          "dark:bg-blue-950 dark:text-blue-400 dark:hover:bg-blue-900",
+          "transition-colors",
+        )}
+      >
+        {linkLabel} →
+      </Link>
+    </div>
+  );
+}
+
 export default function Page({ loaderData: { config, isOidcEnabled } }: Route.ComponentProps) {
   return (
-    <div className="flex max-w-(--breakpoint-lg) flex-col gap-8">
-      <div className="flex w-full flex-col sm:w-2/3">
-        <h1 className="mb-4 text-2xl font-medium">Settings</h1>
-        <p>
-          The settings page is still under construction. As I'm able to add more features, I'll be
-          adding them here. If you require any features, feel free to open an issue on the GitHub
-          repository.
-        </p>
+    <div className="max-w-2xl">
+      <h1 className="mb-1.5 text-2xl font-medium">Settings</h1>
+      <p className="text-md mb-8 text-gray-500 dark:text-gray-400">
+        Manage authentication keys and access restrictions for your network.
+      </p>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <SettingsCard
+          icon={<FileKey2 className="h-5 w-5 text-gray-600 dark:text-gray-300" />}
+          title="Pre-Auth Keys"
+          description="Generate and manage pre-authentication keys to add devices to your tailnet without manual approval."
+          to="/settings/auth-keys"
+          linkLabel="Manage Keys"
+        />
+
+        {config && isOidcEnabled && (
+          <SettingsCard
+            icon={<Shield className="h-5 w-5 text-gray-600 dark:text-gray-300" />}
+            title="Authentication Restrictions"
+            description="Restrict OIDC login to specific email domains, groups, or users to control who can join your tailnet."
+            to="/settings/restrictions"
+            linkLabel="Manage Restrictions"
+          />
+        )}
       </div>
-      <div className="flex w-full flex-col sm:w-2/3">
-        <h1 className="mb-4 text-2xl font-medium">Pre-Auth Keys</h1>
-        <p>
-          Headscale fully supports pre-authentication keys in order to easily add devices to your
-          Tailnet. To learn more about using pre-authentication keys, visit the{" "}
-          <Link external styled to="https://tailscale.com/kb/1085/auth-keys/">
-            Tailscale documentation
-          </Link>
-        </p>
-      </div>
-      <Link to="/settings/auth-keys">
-        <div className="flex items-center text-lg font-medium">
-          Manage Auth Keys
-          <ArrowRight className="ml-2 h-5 w-5" />
-        </div>
-      </Link>
-      {config && isOidcEnabled ? (
-        <>
-          <div className="flex w-full flex-col sm:w-2/3">
-            <h1 className="mb-4 text-2xl font-medium">Authentication Restrictions</h1>
-            <p>
-              Headscale supports restricting OIDC authentication to only allow certain email
-              domains, groups, or users to authenticate. This can be used to limit access to your
-              Tailnet to only certain users or groups and Headplane will also respect these settings
-              when authenticating.{" "}
-              <Link external styled to="https://headscale.net/stable/ref/oidc/#basic-configuration">
-                Learn More
-              </Link>
-            </p>
-          </div>
-          <Link to="/settings/restrictions">
-            <div className="flex items-center text-lg font-medium">
-              Manage Restrictions
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </div>
-          </Link>
-        </>
-      ) : undefined}
     </div>
   );
 }

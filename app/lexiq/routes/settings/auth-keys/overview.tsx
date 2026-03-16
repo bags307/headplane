@@ -169,11 +169,13 @@ export default function Page({
 
   return (
     <div className="flex flex-col md:w-2/3">
-      <p className="text-md mb-8">
-        <Link className="font-medium" to="/settings">
-          Settings
-        </Link>
-        <span className="mx-2">/</span> Pre-Auth Keys
+      <h1 className="mb-1.5 text-2xl font-medium">Pre-Auth Keys</h1>
+      <p className="text-md mb-8 text-gray-500 dark:text-gray-400">
+        Generate keys to add devices to your tailnet. Visit the{" "}
+        <Link external styled to="https://tailscale.com/kb/1085/auth-keys/">
+          Tailscale documentation
+        </Link>{" "}
+        to learn more.
       </p>
       {!access ? (
         <Notice title="Pre-auth key permissions restricted" variant="warning">
@@ -192,14 +194,6 @@ export default function Page({
           Their keys may not be listed correctly. Please check the server logs for more information.
         </Notice>
       ) : undefined}
-      <h1 className="mb-2 text-2xl font-medium">Pre-Auth Keys</h1>
-      <p className="mb-4">
-        Headscale fully supports pre-authentication keys in order to easily add devices to your
-        Tailnet. To learn more about using pre-authentication keys, visit the{" "}
-        <Link external styled to="https://tailscale.com/kb/1085/auth-keys/">
-          Tailscale documentation
-        </Link>
-      </p>
       <AddAuthKey
         currentSubject={currentSubject}
         selfServiceOnly={selfServiceOnly}

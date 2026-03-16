@@ -1,5 +1,5 @@
-import { Globe, Lock, Server, Settings, Users } from "lucide-react";
-import { NavLink } from "react-router";
+import { FileKey2, Globe, Lock, Server, Settings, Shield, Users } from "lucide-react";
+import { NavLink, useLocation } from "react-router";
 
 import cn from "~/utils/cn";
 
@@ -10,6 +10,11 @@ const navItems = [
   { to: "/dns", icon: Globe, label: "DNS", key: "dns" },
   { to: "/settings", icon: Settings, label: "Settings", key: "settings" },
 ] as const;
+
+const settingsSubItems = [
+  { to: "/settings/auth-keys", icon: FileKey2, label: "Pre-Auth Keys" },
+  { to: "/settings/restrictions", icon: Shield, label: "Restrictions" },
+];
 
 interface SidebarProps {
   access: {
@@ -23,6 +28,9 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ access, configAvailable }: SidebarProps) {
+  const location = useLocation();
+  const inSettings = location.pathname.startsWith("/settings");
+
   return (
     <aside
       className={cn(
@@ -54,13 +62,14 @@ export default function Sidebar({ access, configAvailable }: SidebarProps) {
             return (
               <li key={item.to}>
                 <NavLink
+                  end={item.key === "settings"}
                   to={item.to}
                   prefetch="intent"
                   className={({ isActive }) =>
                     cn(
                       "flex items-center gap-3 rounded-md px-3 py-2.5",
                       "text-sm font-medium transition-colors",
-                      isActive
+                      isActive || (item.key === "settings" && inSettings)
                         ? "bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400"
                         : "text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800",
                     )
@@ -69,6 +78,32 @@ export default function Sidebar({ access, configAvailable }: SidebarProps) {
                   <item.icon className="h-5 w-5 flex-shrink-0" />
                   {item.label}
                 </NavLink>
+
+                {/* Settings sub-items */}
+                {item.key === "settings" && inSettings && (
+                  <ul className="mt-1 space-y-0.5 pl-4">
+                    {settingsSubItems.map((sub) => (
+                      <li key={sub.to}>
+                        <NavLink
+                          to={sub.to}
+                          prefetch="intent"
+                          className={({ isActive }) =>
+                            cn(
+                              "flex items-center gap-2.5 rounded-md px-3 py-2",
+                              "text-sm transition-colors",
+                              isActive
+                                ? "bg-blue-50 font-medium text-blue-600 dark:bg-blue-950 dark:text-blue-400"
+                                : "text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800",
+                            )
+                          }
+                        >
+                          <sub.icon className="h-4 w-4 flex-shrink-0" />
+                          {sub.label}
+                        </NavLink>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </li>
             );
           })}
