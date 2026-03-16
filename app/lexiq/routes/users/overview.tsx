@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { useEffect, useState } from "react";
 
+import { Badge } from "~/lexiq/components/badge";
 import { users as usersTable } from "~/server/db/schema";
 import { getOidcSubject } from "~/server/web/headscale-identity";
 import { Capabilities } from "~/server/web/roles";
@@ -21,8 +22,8 @@ interface UserMachine extends User {
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   if (process.env.MOCK_MODE) {
-    const { mockLoader } = await import('~/lexiq/mocks/users')
-    return mockLoader()
+    const { mockLoader } = await import("~/lexiq/mocks/users");
+    return mockLoader();
   }
   const principal = await context.auth.require(request);
   const check = await context.auth.can(principal, Capabilities.read_users);
@@ -105,6 +106,8 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 
   return {
     writable: writablePermission, // whether the user can write to the API
+    canViewUsers: true, // TODO: wire to token resource_access.headplane.roles["view-users"]
+    orgName: context.hs.c?.dns.base_domain, // tailnet domain as org display name
     oidc: context.config.oidc
       ? {
           issuer: context.config.oidc.issuer,
@@ -133,7 +136,14 @@ export default function Page({ loaderData }: Route.ComponentProps) {
 
   return (
     <>
-      <h1 className="mb-1.5 text-2xl font-medium">Users</h1>
+      <h1 className="mb-1.5 text-2xl font-medium">
+        Users
+        {loaderData.orgName && (
+          <span className="ml-2 text-base font-normal text-gray-500 dark:text-gray-400">
+            — {loaderData.orgName}
+          </span>
+        )}
+      </h1>
       <p className="text-md mb-8">Manage the users in your network and their permissions.</p>
       <ManageBanner isDisabled={!loaderData.writable} oidc={loaderData.oidc} />
       <div className="overflow-x-auto">
@@ -141,6 +151,7 @@ export default function Page({ loaderData }: Route.ComponentProps) {
           <thead className="text-mist-600 dark:text-mist-300">
             <tr className="px-0.5 text-left">
               <th className="pb-2 text-xs font-bold uppercase">User</th>
+              <th className="pb-2 text-xs font-bold uppercase">Provider</th>
               <th className="pb-2 text-xs font-bold uppercase">Role</th>
               <th className="pb-2 text-xs font-bold uppercase">Created At</th>
               <th className="pb-2 text-xs font-bold uppercase">Last Seen</th>
@@ -162,6 +173,7 @@ export default function Page({ loaderData }: Route.ComponentProps) {
                   key={user.id}
                   currentLink={loaderData.userLinks[user.id]}
                   headscaleUsers={loaderData.headscaleUsers}
+                  orgName={loaderData.orgName}
                   role={loaderData.roles[users.indexOf(user)]}
                   user={user}
                 />

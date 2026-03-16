@@ -1,6 +1,7 @@
 import { CircleUser } from "lucide-react";
 
 import StatusCircle from "~/components/StatusCircle";
+import { Badge } from "~/lexiq/components/badge";
 import { Machine, User } from "~/types";
 import cn from "~/utils/cn";
 
@@ -11,9 +12,16 @@ interface UserRowProps {
   user: User & { machines: Machine[] };
   headscaleUsers: { id: string; name: string; claimed: boolean }[];
   currentLink?: string;
+  orgName?: string;
 }
 
-export default function UserRow({ user, role, headscaleUsers, currentLink }: UserRowProps) {
+export default function UserRow({
+  user,
+  role,
+  headscaleUsers,
+  currentLink,
+  orgName,
+}: UserRowProps) {
   const isOnline = user.machines.some((machine) => machine.online);
   const lastSeen = user.machines.reduce(
     (acc, machine) => Math.max(acc, new Date(machine.lastSeen).getTime()),
@@ -37,6 +45,18 @@ export default function UserRow({ user, role, headscaleUsers, currentLink }: Use
             <p className={cn("font-semibold leading-snug")}>{user.name || user.displayName}</p>
             <p className="text-sm opacity-50">{user.email}</p>
           </div>
+        </div>
+      </td>
+      <td className="py-2 pl-0.5">
+        <div className="flex items-center gap-1.5">
+          {user.provider === "oidc" ? (
+            <Badge color="blue">OIDC</Badge>
+          ) : (
+            <Badge color="gray">Local</Badge>
+          )}
+          {orgName && user.provider === "oidc" && (
+            <span className="text-xs text-gray-500 dark:text-gray-400">{orgName}</span>
+          )}
         </div>
       </td>
       <td className="py-2 pl-0.5">
