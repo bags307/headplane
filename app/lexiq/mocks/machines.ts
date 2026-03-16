@@ -55,6 +55,9 @@ const devServerHostInfo = {
     { Proto: "peerapi4", Port: 41641 },
     { Proto: "tcp", Port: 22, Description: "ssh" },
   ],
+  sshHostKeys: [
+    "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBMockSSHHostKeyForDevServer==",
+  ],
 };
 
 const mockStats: Record<string, typeof macstudioHostInfo | typeof devServerHostInfo> = {
