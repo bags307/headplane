@@ -27,10 +27,10 @@ export async function loader({ request, params, context }: Route.LoaderArgs) {
     const node = populatedNodes.find((n) => n.id === params.id) ?? populatedNodes[0];
     return {
       agent,
-      existingTags: [],
+      existingTags: ["tag:server"],
       magic,
       node,
-      stats: undefined,
+      stats: node.hostInfo,
       supportsNodeOwnerChange: false,
       tags: node.tags,
       users,
