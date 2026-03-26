@@ -74,9 +74,21 @@ fi
 export HEADSCALE_API_KEY="$API_KEY"
 echo "[entrypoint] HEADSCALE_API_KEY exported"
 
+# Create writable copy of headplane config and inject the API key
+# The ConfigMap mount is read-only, so we copy to /tmp and use yq to set the key
+HEADPLANE_CONFIG_RUNTIME="/tmp/headplane-runtime.yaml"
+if [ -f "$HEADPLANE_CONFIG" ]; then
+    cp "$HEADPLANE_CONFIG" "$HEADPLANE_CONFIG_RUNTIME"
+    yq -i ".oidc.headscale_api_key = \"$API_KEY\"" "$HEADPLANE_CONFIG_RUNTIME"
+    echo "[entrypoint] Injected API key into headplane runtime config"
+else
+    echo "[entrypoint] WARNING: No headplane config at $HEADPLANE_CONFIG, using defaults"
+    HEADPLANE_CONFIG_RUNTIME="$HEADPLANE_CONFIG"
+fi
+
 # Start headplane in the background
 echo "[entrypoint] Starting headplane..."
-export HEADPLANE_CONFIG_PATH="$HEADPLANE_CONFIG"
+export HEADPLANE_CONFIG_PATH="$HEADPLANE_CONFIG_RUNTIME"
 node /app/build/server/index.js &
 HEADPLANE_PID=$!
 echo "[entrypoint] headplane started (PID $HEADPLANE_PID)"

@@ -61,7 +61,7 @@ RUN HEADPLANE_VERSION=$HEADPLANE_VERSION ./build.sh --app
 # Stage 4: Combined final image
 FROM node:22-alpine AS combined
 
-RUN apk add --no-cache bash curl ca-certificates
+RUN apk add --no-cache bash curl ca-certificates yq
 
 # Install headscale binary
 COPY --from=headscale-builder /go/bin/headscale /usr/local/bin/headscale
