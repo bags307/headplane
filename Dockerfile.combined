@@ -26,7 +26,7 @@ COPY internal/ ./internal/
 
 ARG TARGETOS
 ARG TARGETARCH
-ARG IMAGE_TAG
+ARG IMAGE_TAG=combined
 RUN GOOS=$TARGETOS GOARCH=$TARGETARCH CGO_ENABLED=0 IMAGE_TAG=$IMAGE_TAG \
 	./build.sh --wasm --agent --fake-shell --healthcheck \
 		--wasm-output /bin/hp_ssh.wasm \
@@ -55,7 +55,7 @@ COPY --from=headplane-go /bin/wasm_exec.js /run/app/wasm_exec.js
 RUN ./build.sh --app --app-install-only
 
 COPY . .
-ARG HEADPLANE_VERSION
+ARG HEADPLANE_VERSION=dev
 RUN HEADPLANE_VERSION=$HEADPLANE_VERSION ./build.sh --app
 
 # Stage 4: Combined final image
