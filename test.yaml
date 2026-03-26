@@ -1,0 +1,10 @@
+services:
+  headplane:
+    image: headscale/headscale:stable
+    container_name: headplane
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - "./config.yaml:/etc/headplane/config.yaml"
+      - "./headplane-data:/var/lib/headplane"

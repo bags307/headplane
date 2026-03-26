@@ -25,8 +25,11 @@ export default function ManageBanner({ oidc, isDisabled }: ManageBannerProps) {
                   OpenID Connect provider
                 </Link>
                 {". "}
-                Groups and user information do not automatically sync.{" "}
-                <Link to="https://headscale.net/stable/ref/oidc">Learn more</Link>
+                Users are automatically created here when they{" "}
+                <Link styled to="/login">
+                  sign in for the first time
+                </Link>
+                {"."}
               </>
             ) : (
               <>

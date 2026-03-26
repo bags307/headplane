@@ -1,0 +1,36 @@
+server:
+  host: "0.0.0.0"
+  port: 3000
+  base_url: "http://127.0.0.1:3000"
+  cookie_secret: "local_dev_secret_32chars_paddin!"
+  cookie_secure: false
+  data_path: "/var/lib/headplane"
+
+headscale:
+  url: "http://host.docker.internal:8080"
+  config_path: "/etc/headscale/config.yaml"
+  config_strict: false
+
+oidc:
+  enabled: true
+  issuer: "https://auth.remodl.ai/realms/remodl"
+  client_id: "headplane"
+  client_secret: "6TkYcVj7qislS5Y9SD3tbUlitBlNZxDC"
+  headscale_api_key: "hskey-api-m2nOh96YXlau-15iAwJkRFbIpc54N-l63DCQKLS62xBPAAYKEnY1-9VgpLGAuhdjRrO2r8xVqEbl0"
+  extra_params:
+    kc_org: "conifer-holdings"
+
+integration:
+  agent:
+    enabled: true
+    pre_authkey: "hskey-auth-tsSsvkU56Tkn-lKBoCLshcJ1ATWujRRv4T3TQb_v5GqgEhiTB8UeBGkS78iV-R1E4zSU-A00h3m-h"
+    host_name: "headplane-agent"
+  docker:
+    enabled: true
+    container_label: "me.tale.headplane.target=headscale"
+    socket: "unix:///var/run/docker.sock"
+  kubernetes:
+    enabled: false
+    pod_name: "placeholder"
+  proc:
+    enabled: false
