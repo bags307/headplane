@@ -76,6 +76,7 @@ echo "[entrypoint] HEADSCALE_API_KEY exported"
 
 # Start headplane in the background
 echo "[entrypoint] Starting headplane..."
+export HEADPLANE_CONFIG_PATH="$HEADPLANE_CONFIG"
 node /app/build/server/index.js &
 HEADPLANE_PID=$!
 echo "[entrypoint] headplane started (PID $HEADPLANE_PID)"
