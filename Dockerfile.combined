@@ -1,0 +1,94 @@
+# Stage 1: Build headscale binary
+# Uses headscale's Go version (1.26.1-trixie), NOT headplane's
+FROM docker.io/golang:1.26.1-trixie AS headscale-builder
+ARG VERSION=dev
+ENV GOPATH=/go
+WORKDIR /go/src/headscale
+
+# Download dependencies - only invalidated when go.mod/go.sum change
+COPY headscale/go.mod headscale/go.sum ./
+RUN go mod download
+
+# Copy source and build
+COPY headscale/ .
+RUN CGO_ENABLED=0 GOOS=linux go build -o /go/bin/headscale ./cmd/headscale
+
+# Stage 2: Build headplane Go binaries (WASM, agent, fake-shell, healthcheck)
+# Uses headplane's Go version (1.25.1) — intentionally different from headscale's
+FROM --platform=$BUILDPLATFORM golang:1.25.1 AS headplane-go
+WORKDIR /run
+
+COPY go.mod go.sum build.sh ./
+RUN go mod download
+
+COPY cmd/ ./cmd/
+COPY internal/ ./internal/
+
+ARG TARGETOS
+ARG TARGETARCH
+ARG IMAGE_TAG
+RUN GOOS=$TARGETOS GOARCH=$TARGETARCH CGO_ENABLED=0 IMAGE_TAG=$IMAGE_TAG \
+	./build.sh --wasm --agent --fake-shell --healthcheck \
+		--wasm-output /bin/hp_ssh.wasm \
+		--agent-output /bin/hp_agent \
+		--fake-shell-output /bin/fake-sh \
+		--healthcheck-output /bin/hp_healthcheck
+
+RUN chmod +x /bin/hp_ssh.wasm
+RUN chmod +x /bin/hp_agent
+RUN chmod +x /bin/fake-sh
+RUN chmod +x /bin/hp_healthcheck
+
+# Folder needs to exist for later stages
+RUN mkdir -p /var/lib/headplane/agent
+
+# Stage 3: Build headplane Node.js app
+FROM --platform=$BUILDPLATFORM node:22.16-slim AS headplane-js
+WORKDIR /run
+
+RUN corepack enable
+COPY patches ./patches
+COPY package.json pnpm-lock.yaml build.sh ./
+
+COPY --from=headplane-go /bin/hp_ssh.wasm /run/app/hp_ssh.wasm
+COPY --from=headplane-go /bin/wasm_exec.js /run/app/wasm_exec.js
+RUN ./build.sh --app --app-install-only
+
+COPY . .
+ARG HEADPLANE_VERSION
+RUN HEADPLANE_VERSION=$HEADPLANE_VERSION ./build.sh --app
+
+# Stage 4: Combined final image
+FROM node:22-alpine AS combined
+
+RUN apk add --no-cache bash curl ca-certificates
+
+# Install headscale binary
+COPY --from=headscale-builder /go/bin/headscale /usr/local/bin/headscale
+
+# Create headscale runtime directories
+RUN mkdir -p /var/lib/headscale /var/run/headscale /etc/headscale
+
+# Install headplane app
+COPY --from=headplane-js /run/build /app/build
+COPY --from=headplane-js /run/drizzle /app/drizzle
+COPY --from=headplane-js /run/node_modules /app/node_modules
+
+# Install headplane Go binaries
+COPY --from=headplane-go /bin/hp_agent /usr/libexec/headplane/agent
+COPY --from=headplane-go /bin/hp_healthcheck /bin/hp_healthcheck
+
+# Install headplane data directory
+COPY --from=headplane-go /var/lib/headplane /var/lib/headplane
+
+# Entrypoint script
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+EXPOSE 8080 3000 9090
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+	CMD curl -sf http://127.0.0.1:8080/health > /dev/null && curl -sf http://127.0.0.1:3000/health > /dev/null
+
+WORKDIR /app
+ENTRYPOINT ["/entrypoint.sh"]
